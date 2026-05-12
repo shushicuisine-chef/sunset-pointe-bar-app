@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Resort breakfast plate">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff6df"/>
+      <stop offset="0.55" stop-color="#f7fbfb"/>
+      <stop offset="1" stop-color="#e9665b"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#081426" flood-opacity=".22"/></filter>
+  </defs>
+  <rect width="900" height="650" fill="url(#bg)"/>
+  <circle cx="725" cy="120" r="150" fill="#d49a2a" opacity=".22"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="450" cy="385" rx="285" ry="126" fill="#ffffff"/>
+    <ellipse cx="450" cy="385" rx="240" ry="96" fill="#f7fbfb"/>
+    <rect x="280" y="280" width="250" height="118" rx="28" fill="#d49a2a"/>
+    <rect x="300" y="255" width="250" height="116" rx="28" fill="#fff6df"/>
+    <circle cx="600" cy="345" r="62" fill="#ffffff"/>
+    <circle cx="600" cy="345" r="30" fill="#d49a2a"/>
+    <path d="M206 450c76-46 148-47 220 0" fill="none" stroke="#e9665b" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="314" cy="330" r="24" fill="#2f7d55"/>
+    <circle cx="363" cy="316" r="18" fill="#2f7d55"/>
+  </g>
+  <text x="52" y="92" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="800" fill="#081426">Breakfast</text>
+</svg>

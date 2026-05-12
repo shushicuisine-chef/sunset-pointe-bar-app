@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Poolside favorites">
+  <defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff6df"/><stop offset=".5" stop-color="#f7fbfb"/><stop offset="1" stop-color="#d49a2a"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#081426" flood-opacity=".22"/></filter></defs>
+  <rect width="900" height="650" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="450" cy="410" rx="300" ry="120" fill="#ffffff"/>
+    <rect x="276" y="300" width="190" height="80" rx="22" fill="#d49a2a"/>
+    <rect x="292" y="276" width="190" height="80" rx="22" fill="#fff6df"/>
+    <rect x="510" y="296" width="148" height="28" rx="14" fill="#d49a2a"/>
+    <rect x="520" y="336" width="148" height="28" rx="14" fill="#d49a2a"/>
+    <rect x="530" y="376" width="148" height="28" rx="14" fill="#d49a2a"/>
+    <path d="M236 452c76-44 152-45 228 0" fill="none" stroke="#e9665b" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="430" cy="326" r="22" fill="#2f7d55"/>
+  </g>
+  <text x="52" y="92" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="800" fill="#081426">Poolside Favorites</text>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Sunset Pointe Bar menu image placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#081426"/>
+      <stop offset="0.58" stop-color="#123657"/>
+      <stop offset="1" stop-color="#d49a2a"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity=".3"/></filter>
+  </defs>
+  <rect width="900" height="650" fill="url(#bg)"/>
+  <circle cx="720" cy="138" r="130" fill="#e9665b" opacity=".3"/>
+  <circle cx="132" cy="510" r="180" fill="#ffffff" opacity=".08"/>
+  <g filter="url(#shadow)">
+    <rect x="254" y="214" width="392" height="222" rx="34" fill="#ffffff" opacity=".94"/>
+    <path d="M318 356c82-58 180-58 264 0" fill="none" stroke="#d49a2a" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="450" cy="298" r="48" fill="#e9665b"/>
+    <path d="M344 390h212" stroke="#081426" stroke-width="16" stroke-linecap="round"/>
+  </g>
+  <text x="56" y="92" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="800" fill="#ffffff">Sunset Pointe Bar</text>
+  <text x="56" y="138" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="700" fill="#f8d98c">Menu image coming soon</text>
+</svg>
