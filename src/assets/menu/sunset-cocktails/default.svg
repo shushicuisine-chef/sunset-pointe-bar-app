@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Sunset cocktails">
+  <defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#081426"/><stop offset=".5" stop-color="#d49a2a"/><stop offset="1" stop-color="#e9665b"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#081426" flood-opacity=".3"/></filter></defs>
+  <rect width="900" height="650" fill="url(#bg)"/>
+  <circle cx="704" cy="116" r="120" fill="#fff6df" opacity=".2"/>
+  <g filter="url(#shadow)">
+    <path d="M250 202h224l-112 132z" fill="#ffffff" opacity=".96"/>
+    <path d="M362 334v130" stroke="#ffffff" stroke-width="28" stroke-linecap="round"/>
+    <path d="M290 486h144" stroke="#ffffff" stroke-width="28" stroke-linecap="round"/>
+    <path d="M296 234h132l-66 74z" fill="#e9665b"/>
+    <rect x="542" y="208" width="126" height="280" rx="32" fill="#ffffff" opacity=".96"/>
+    <rect x="568" y="274" width="74" height="156" rx="22" fill="#f8c66a"/>
+    <circle cx="658" cy="224" r="34" fill="#2f7d55"/>
+  </g>
+  <text x="52" y="92" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="800" fill="#fff6df">Sunset Cocktails</text>
+</svg>

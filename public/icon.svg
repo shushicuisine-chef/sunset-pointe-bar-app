@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Sunset Pointe Bar</title>
+  <rect width="512" height="512" rx="96" fill="#081426"/>
+  <circle cx="256" cy="206" r="98" fill="#d49a2a"/>
+  <path d="M104 292c41-28 85-42 132-42 64 0 108 30 172 30 25 0 49-4 72-13v49c-24 9-49 14-74 14-65 0-109-30-172-30-47 0-91 15-130 45v-53Z" fill="#fff6df"/>
+  <path d="M130 354c34-20 70-30 108-30 55 0 93 23 148 23 28 0 55-6 82-18v42c-26 13-53 20-82 20-56 0-94-23-149-23-38 0-73 11-107 34v-48Z" fill="#e9665b"/>
+  <path d="M180 198h152v40H180z" fill="#081426"/>
+  <path d="M205 158h102v42H205z" fill="#081426"/>
+</svg>

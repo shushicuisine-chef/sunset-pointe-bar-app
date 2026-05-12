@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Frozen tropical drinks">
+  <defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff6df"/><stop offset=".48" stop-color="#e9665b"/><stop offset="1" stop-color="#081426"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#081426" flood-opacity=".25"/></filter></defs>
+  <rect width="900" height="650" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <path d="M282 218h168l-28 270H310z" fill="#ffffff" opacity=".95"/>
+    <path d="M318 268h92l-14 164h-64z" fill="#f8c66a"/>
+    <path d="M300 218h132l-40-72H340z" fill="#ffffff"/>
+    <path d="M492 228h168l-34 260H528z" fill="#ffffff" opacity=".95"/>
+    <path d="M532 280h78l-18 150h-42z" fill="#f6a21a"/>
+    <path d="M514 228h122l-34-72h-54z" fill="#ffffff"/>
+    <circle cx="448" cy="188" r="34" fill="#2f7d55"/>
+    <circle cx="662" cy="198" r="32" fill="#d49a2a"/>
+    <path d="M454 132l58 190" stroke="#081426" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <text x="52" y="92" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="800" fill="#081426">Frozen Drinks</text>
+</svg>
