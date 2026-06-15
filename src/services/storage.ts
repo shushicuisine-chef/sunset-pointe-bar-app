@@ -34,6 +34,7 @@ const defaultCategoryImagePaths = new Set([
 ]);
 
 const uploadedDishImageOwner = new Map([
+  ["/menu-images/venetian-prosecco.png", "prosecco"],
   ["/menu-images/marina-egg-sandwich.png", "breakfast-sandwich"],
   ["/menu-images/tropical-yogurt.jpg", "tropical-yogurt"],
   ["/menu-images/sunrise-wrap.jpg", "sunrise-wrap"],
@@ -44,9 +45,16 @@ const uploadedDishImageOwner = new Map([
   ["/menu-images/gulf-coast-lager.jpg", "local-lager"],
   ["/menu-images/frozen-sunset-margarita.jpg", "frozen-margarita"],
   ["/menu-images/pina-colada.png", "frozen-pina"],
+  ["/menu-images/mango-cooler.png", "frozen-mango"],
   ["/menu-images/zero-proof-mule.png", "zero-proof-mule"],
+  ["/menu-images/island-shandy.png", "island-shandy"],
+  ["/menu-images/yuzu-tide.png", "yuzu-tide"],
+  ["/menu-images/blackberry-sunset.png", "blackberry-sunset"],
+  ["/menu-images/marina-blanca.png", "marina-blanca"],
+  ["/menu-images/sunset-bellini.png", "sunset-bellini"],
   ["/menu-images/half-dozen-oysters.jpg", "oysters-half-dozen"],
   ["/menu-images/jumbo-shrimp-cocktail.jpg", "shrimp-cocktail"],
+  ["/menu-images/smoked-fish-dip.png", "smoked-fish-dip"],
   ["/menu-images/smoked-fish-board.jpg", "smoked-fish-board"],
   ["/menu-images/smoked-meat-board.jpg", "smoked-brisket-board"],
   ["/menu-images/pulled-pork-sliders.png", "pulled-pork-sliders"],
@@ -74,7 +82,7 @@ const isMismatchedUploadedDishImage = (itemId: string, imageUrl?: string) => {
   return Boolean(owner && owner !== itemId);
 };
 
-const retiredMenuItemIds = new Set(["smoked-chicken-wings"]);
+const retiredMenuItemIds = new Set(["smoked-chicken-wings", "pointe-paloma", "coral-spritz", "zero-proof-mule"]);
 
 const mergeMenuDefaults = (items: MenuItem[]) => {
   const defaults = new Map(initialMenuItems.map((item) => [item.id, item]));
