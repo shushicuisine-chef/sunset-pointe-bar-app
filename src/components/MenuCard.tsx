@@ -88,9 +88,9 @@ export function MenuCard({ item, onAdd, disabled }: MenuCardProps) {
 const categoryGradient: Record<MenuCategory, string> = {
   Breakfast: "from-sunset-500 via-coral-500 to-white",
   "Coffee & Juice": "from-navy-950 via-sunset-500 to-white",
-  "Frozen Drinks": "from-coral-500 via-white to-sunset-500",
+  Slushies: "from-coral-500 via-white to-sunset-500",
   "Beer & Wine": "from-navy-950 via-coral-500 to-sunset-500",
-  "Sunset Cocktails": "from-navy-950 via-sunset-500 to-coral-500",
+  "Sunset Refreshers": "from-navy-950 via-sunset-500 to-coral-500",
   "Surf & Turf Bites": "from-white via-foam to-sunset-500",
   "Smoked Meats": "from-navy-950 via-sunset-500 to-coral-500",
   "Poolside Favorites": "from-sunset-500 via-white to-coral-500",

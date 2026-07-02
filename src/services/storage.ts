@@ -26,8 +26,10 @@ const defaultCategoryImagePaths = new Set([
   "/menu-images/breakfast.jpg",
   "/menu-images/coffee-juice.jpg",
   "/menu-images/frozen-drinks.jpg",
+  "/menu-images/slushies.jpg",
   "/menu-images/beer-wine.jpg",
   "/menu-images/sunset-cocktails.jpg",
+  "/menu-images/sunset-refreshers.jpg",
   "/menu-images/surf-turf-bites.jpg",
   "/menu-images/smoked-meats.jpg",
   "/menu-images/poolside-favorites.jpg",
@@ -52,6 +54,7 @@ const uploadedDishImageOwner = new Map([
   ["/menu-images/blackberry-sunset.png", "blackberry-sunset"],
   ["/menu-images/marina-blanca.png", "marina-blanca"],
   ["/menu-images/sunset-bellini.png", "sunset-bellini"],
+  ["/menu-images/tinto-de-verano.png", "tinto-de-verano"],
   ["/menu-images/half-dozen-oysters.jpg", "oysters-half-dozen"],
   ["/menu-images/jumbo-shrimp-cocktail.jpg", "shrimp-cocktail"],
   ["/menu-images/smoked-fish-dip.png", "smoked-fish-dip"],
@@ -82,7 +85,17 @@ const isMismatchedUploadedDishImage = (itemId: string, imageUrl?: string) => {
   return Boolean(owner && owner !== itemId);
 };
 
-const retiredMenuItemIds = new Set(["smoked-chicken-wings", "pointe-paloma", "coral-spritz", "zero-proof-mule"]);
+const retiredMenuItemIds = new Set([
+  "smoked-chicken-wings",
+  "pointe-paloma",
+  "coral-spritz",
+  "zero-proof-mule",
+  "frozen-margarita",
+  "frozen-pina",
+  "frozen-mango",
+]);
+
+const legacyCategoryNames = new Set(["Frozen Drinks", "Sunset Cocktails"]);
 
 const mergeMenuDefaults = (items: MenuItem[]) => {
   const defaults = new Map(initialMenuItems.map((item) => [item.id, item]));
@@ -93,10 +106,12 @@ const mergeMenuDefaults = (items: MenuItem[]) => {
     const shouldRefreshStockImage =
       Boolean(defaultItem?.imageUrl) &&
       (isOutdatedStockImage(item.imageUrl) || isMismatchedUploadedDishImage(item.id, item.imageUrl));
+    const shouldRefreshCategory = Boolean(defaultItem && legacyCategoryNames.has(String(item.category)));
 
     return {
       ...defaultItem,
       ...item,
+      category: shouldRefreshCategory && defaultItem ? defaultItem.category : item.category,
       cost: item.cost ?? defaultItem?.cost,
       imageUrl: shouldRefreshStockImage ? defaultItem?.imageUrl : item.imageUrl,
     };

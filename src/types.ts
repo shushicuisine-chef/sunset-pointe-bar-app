@@ -15,9 +15,9 @@ export type Page =
 export type MenuCategory =
   | "Breakfast"
   | "Coffee & Juice"
-  | "Frozen Drinks"
+  | "Slushies"
   | "Beer & Wine"
-  | "Sunset Cocktails"
+  | "Sunset Refreshers"
   | "Surf & Turf Bites"
   | "Smoked Meats"
   | "Poolside Favorites";
