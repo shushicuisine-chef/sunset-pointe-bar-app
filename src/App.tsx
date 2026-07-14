@@ -25,21 +25,41 @@ import { Button } from "./components/Button";
 import { MenuCard } from "./components/MenuCard";
 import { OrderCard } from "./components/OrderCard";
 import heroImage from "./assets/sunset-pointe-hero.png";
+import { activeProperty, eventAnnouncements, experiences, operatingWindows, revenueCenters } from "./data/hospitality";
 import { initialMenuItems, initialSettings, menuCategories } from "./data/menu";
 import { formatMoney, formatTime } from "./lib/format";
 import { buildPaymentIntentDraft, paymentProviderOptions } from "./services/payment";
 import {
   calculateCart,
+  createReservationRequest,
   createOrder,
   exportOrdersCsv,
   getMenuItems,
   getOrders,
+  getReservationRequests,
   getSettings,
   saveMenuItems,
   saveSettings,
   updateOrderStatus,
+  updateReservationStatus,
 } from "./services/storage";
-import type { BarSettings, CartItem, CheckoutForm, MenuCategory, MenuItem, Order, OrderStatus, Page } from "./types";
+import type {
+  BarSettings,
+  CartItem,
+  CheckoutForm,
+  EventAnnouncement,
+  Experience,
+  MenuCategory,
+  MenuItem,
+  OperatingWindow,
+  Order,
+  OrderStatus,
+  Page,
+  ReservationForm,
+  ReservationRequest,
+  ReservationStatus,
+  RevenueCenter,
+} from "./types";
 
 const adminPassword = "sunset90";
 const primaryDomain = "sunsetpointebar.com";
@@ -54,15 +74,28 @@ const emptyCheckoutForm: CheckoutForm = {
   ageConfirmed: false,
 };
 
+const emptyReservationForm: ReservationForm = {
+  guestName: "",
+  roomNumber: "",
+  phone: "",
+  preferredDate: "",
+  preferredTime: "19:00",
+  partySize: 2,
+  notes: "",
+};
+
 export default function App() {
   const [page, setPage] = useState<Page>(() => pageFromPath(window.location.pathname));
   const [history, setHistory] = useState<Page[]>([pageFromPath(window.location.pathname)]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getMenuItems);
   const [orders, setOrders] = useState<Order[]>(getOrders);
+  const [reservationRequests, setReservationRequests] = useState<ReservationRequest[]>(getReservationRequests);
   const [settings, setSettings] = useState<BarSettings>(getSettings);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState(menuCategories[0]);
   const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>(emptyCheckoutForm);
+  const [reservationForm, setReservationForm] = useState<ReservationForm>(emptyReservationForm);
+  const [lastReservation, setLastReservation] = useState<ReservationRequest | null>(null);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [statusLookup, setStatusLookup] = useState("");
   const [adminPasswordInput, setAdminPasswordInput] = useState("");
@@ -137,6 +170,10 @@ export default function App() {
     setOrders(updateOrderStatus(orderId, status));
   };
 
+  const changeReservationStatus = (requestId: string, status: ReservationStatus) => {
+    setReservationRequests(updateReservationStatus(requestId, status));
+  };
+
   const submitOrder = () => {
     if (!cart.length) return;
     const order = createOrder(cart, menuItems, checkoutForm, settings);
@@ -147,6 +184,14 @@ export default function App() {
     setCart([]);
     setCheckoutForm(emptyCheckoutForm);
     navigate("confirmation");
+  };
+
+  const submitReservation = () => {
+    if (!reservationForm.guestName.trim() || !reservationForm.phone.trim() || !reservationForm.preferredDate) return;
+    const request = createReservationRequest(reservationForm);
+    setReservationRequests(getReservationRequests());
+    setLastReservation(request);
+    setReservationForm(emptyReservationForm);
   };
 
   const loginAdmin = () => {
@@ -172,6 +217,9 @@ export default function App() {
       <HomePage
         settings={settings}
         featuredItems={featuredItems}
+        experiences={experiences}
+        operatingWindows={operatingWindows}
+        announcements={eventAnnouncements}
         onNavigate={navigate}
         onAdd={addToCart}
       />
@@ -211,6 +259,15 @@ export default function App() {
         onLookupChange={setStatusLookup}
       />
     ),
+    reservations: (
+      <ReservationsPage
+        form={reservationForm}
+        lastRequest={lastReservation}
+        onChange={setReservationForm}
+        onSubmit={submitReservation}
+        onNavigate={navigate}
+      />
+    ),
     "admin-login": (
       <AdminLoginPage
         password={adminPasswordInput}
@@ -222,10 +279,14 @@ export default function App() {
     admin: isAdmin ? (
       <AdminDashboardPage
         orders={orders}
+        menuItems={menuItems}
         openOrders={openOrders.length}
         completedSales={completedSales}
         settings={settings}
+        revenueCenters={revenueCenters}
+        reservationRequests={reservationRequests}
         onStatusChange={changeOrderStatus}
+        onReservationStatusChange={changeReservationStatus}
         onNavigate={navigate}
         onExport={() => exportOrdersCsv(orders)}
       />
@@ -260,7 +321,15 @@ export default function App() {
   } satisfies Record<Page, ReactNode>;
 
   return (
-    <AppShell page={page} cartCount={cartCount} onNavigate={navigate} onBack={goBack}>
+    <AppShell
+      page={page}
+      cartCount={cartCount}
+      onNavigate={navigate}
+      onBack={goBack}
+      title={activeProperty.brandName}
+      subtitle={activeProperty.name}
+      domain={activeProperty.domain}
+    >
       {pageContent[page]}
     </AppShell>
   );
@@ -274,6 +343,7 @@ function pageFromPath(pathname: string): Page {
   if (pathname === "/cart") return "cart";
   if (pathname === "/checkout") return "checkout";
   if (pathname === "/status") return "status";
+  if (pathname === "/reservations") return "reservations";
   if (pathname === "/confirmation") return "confirmation";
   if (pathname === "/privacy") return "privacy";
   if (pathname === "/terms") return "terms";
@@ -288,6 +358,7 @@ function pathForPage(page: Page) {
     checkout: "/checkout",
     confirmation: "/confirmation",
     status: "/status",
+    reservations: "/reservations",
     "admin-login": "/admin",
     admin: "/admin",
     "menu-management": "/admin/menu",
@@ -297,6 +368,24 @@ function pathForPage(page: Page) {
   };
 
   return paths[page];
+}
+
+function minutesFromTime(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
+function isOperatingWindowOpen(operatingWindow: OperatingWindow) {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = minutesFromTime(operatingWindow.startTime);
+  const endMinutes = minutesFromTime(operatingWindow.endTime);
+
+  if (endMinutes < startMinutes) {
+    return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+  }
+
+  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
 }
 
 function Notice({ settings }: { settings: BarSettings }) {
@@ -314,11 +403,17 @@ function Notice({ settings }: { settings: BarSettings }) {
 function HomePage({
   settings,
   featuredItems,
+  experiences,
+  operatingWindows,
+  announcements,
   onNavigate,
   onAdd,
 }: {
   settings: BarSettings;
   featuredItems: MenuItem[];
+  experiences: Experience[];
+  operatingWindows: OperatingWindow[];
+  announcements: EventAnnouncement[];
   onNavigate: (page: Page) => void;
   onAdd: (id: string) => void;
 }) {
@@ -331,15 +426,18 @@ function HomePage({
         >
           <div className="absolute inset-0 bg-gradient-to-b from-navy-950/35 via-navy-950/55 to-navy-950/90" />
           <div className="relative flex min-h-[430px] flex-col justify-end px-5 py-7 sm:min-h-[520px] sm:px-8 sm:py-10">
-            <p className="text-sm font-semibold text-sunset-400">Operated by FABS Hospitality Group</p>
-            <h1 className="mt-3 max-w-xl text-4xl font-bold leading-tight sm:text-5xl">Sunset Pointe Bar</h1>
+            <p className="text-sm font-semibold text-sunset-400">FABS Hospitality OS</p>
+            <h1 className="mt-3 max-w-xl text-4xl font-bold leading-tight sm:text-5xl">
+              One guest. Multiple touchpoints. One coordinated day.
+            </h1>
             <p className="mt-4 max-w-lg text-base leading-7 text-white/80">
-              Scan the QR code, order from your phone, and pick up at the bar when it is ready.
+              {activeProperty.brandName} is a hands-on coastal dining experience built around composed bites, fire,
+              smoke, Sushi, ShuShi, and land-and-ocean pairings.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <Button fullWidth disabled={settings.orderingPaused} onClick={() => onNavigate("menu")}>
                 <ShoppingBag size={19} />
-                Pickup Order
+                Start Order
               </Button>
               <Button fullWidth variant="secondary" onClick={() => onNavigate("menu")}>
                 <MenuIcon size={19} />
@@ -349,9 +447,9 @@ function HomePage({
                 <PackageCheck size={19} />
                 Order Status
               </Button>
-              <Button fullWidth variant="secondary" onClick={() => window.location.assign("tel:+13055550199")}>
-                <Phone size={19} />
-                Contact Bar
+              <Button fullWidth variant="secondary" onClick={() => onNavigate("reservations")}>
+                <ReceiptText size={19} />
+                Private Dining
               </Button>
             </div>
           </div>
@@ -367,7 +465,9 @@ function HomePage({
             </div>
             <div>
               <h2 className="font-semibold">Pickup Instructions</h2>
-              <p className="text-sm text-navy-900/70">Collect your order at Sunset Pointe Bar. Alcohol requires valid ID.</p>
+              <p className="text-sm text-navy-900/70">
+                Phase 1 orders are pickup-first. Alcohol requires valid ID at handoff.
+              </p>
             </div>
           </div>
           <div className="mt-4 flex items-center gap-3 rounded-lg bg-foam p-3">
@@ -380,8 +480,31 @@ function HomePage({
             <LockKeyhole size={18} />
             Staff Login
           </Button>
+          <Button className="mt-3" variant="ghost" onClick={() => window.location.assign("tel:+13055550199")}>
+            <Phone size={18} />
+            Contact Bar
+          </Button>
         </div>
       </aside>
+
+      <section className="lg:col-span-2">
+        <div className="mb-3">
+          <p className="text-sm font-bold uppercase tracking-wide text-sunset-500">Today at {activeProperty.shortName}</p>
+          <h2 className="text-xl font-bold">Guest Experiences</h2>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {experiences.map((experience) => (
+            <ExperienceCard
+              experience={experience}
+              operatingWindow={operatingWindows.find((window) => window.id === experience.operatingWindowId)}
+              key={experience.id}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      </section>
+
+      <SunsetFeed announcements={announcements} />
 
       <section className="lg:col-span-2">
         <div className="mb-3 flex items-center justify-between">
@@ -397,6 +520,78 @@ function HomePage({
         </div>
       </section>
     </div>
+  );
+}
+
+function ExperienceCard({
+  experience,
+  operatingWindow,
+  onNavigate,
+}: {
+  experience: Experience;
+  operatingWindow?: OperatingWindow;
+  onNavigate: (page: Page) => void;
+}) {
+  const isOpen = operatingWindow ? isOperatingWindowOpen(operatingWindow) : false;
+  const status = operatingWindow ? (isOpen ? "Open now" : "Closed now") : "Reservation only";
+
+  return (
+    <article className="rounded-lg border border-navy-950/10 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-bold">{experience.name}</h3>
+          <p className="mt-2 text-sm leading-6 text-navy-900/65">{experience.description}</p>
+        </div>
+        <span
+          className={[
+            "shrink-0 rounded-full px-2 py-1 text-[11px] font-bold",
+            isOpen ? "bg-emerald-100 text-emerald-800" : "bg-sunset-100 text-navy-900",
+          ].join(" ")}
+        >
+          {status}
+        </span>
+      </div>
+      <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy-900/70">
+        <Clock3 size={17} className="text-sunset-500" />
+        <span>{operatingWindow ? operatingWindow.label : "By request"}</span>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {experience.orderEnabled ? (
+          <Button variant="secondary" onClick={() => onNavigate("menu")}>
+            View Menu
+          </Button>
+        ) : null}
+        {experience.reservationEnabled ? (
+          <Button variant="secondary" onClick={() => onNavigate("reservations")}>
+            Reserve
+          </Button>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function SunsetFeed({ announcements }: { announcements: EventAnnouncement[] }) {
+  return (
+    <section className="lg:col-span-2">
+      <div className="rounded-lg border border-sunset-500/25 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide text-sunset-500">The Sunset Feed</p>
+            <h2 className="text-xl font-bold">Live Guest Signals</h2>
+          </div>
+          <span className="rounded-full bg-navy-950 px-3 py-1 text-xs font-bold text-white">Configured</span>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {announcements.map((announcement) => (
+            <div className="rounded-lg bg-foam p-3" key={announcement.id}>
+              <p className="font-semibold">{announcement.title}</p>
+              <p className="mt-1 text-sm leading-6 text-navy-900/65">{announcement.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -801,6 +996,99 @@ function StatusPage({
   );
 }
 
+function ReservationsPage({
+  form,
+  lastRequest,
+  onChange,
+  onSubmit,
+  onNavigate,
+}: {
+  form: ReservationForm;
+  lastRequest: ReservationRequest | null;
+  onChange: (form: ReservationForm) => void;
+  onSubmit: () => void;
+  onNavigate: (page: Page) => void;
+}) {
+  const update = (patch: Partial<ReservationForm>) => onChange({ ...form, ...patch });
+  const canSubmit = Boolean(form.guestName.trim() && form.phone.trim() && form.preferredDate);
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <section className="rounded-lg border border-navy-950/10 bg-white p-5 shadow-sm">
+        <p className="text-sm font-bold uppercase tracking-wide text-sunset-500">Reservation Experience</p>
+        <h1 className="mt-2 text-3xl font-bold">Amicasa Private Dining</h1>
+        <p className="mt-3 text-sm leading-7 text-navy-900/70">
+          Reservation-only, chef-guided hands-on tasting experience for up to 12 guests. This is modeled as a
+          configured reservation experience, not a standard menu item.
+        </p>
+
+        {lastRequest ? (
+          <div className="mt-5 rounded-lg bg-sunset-100 p-4 text-sm leading-6 text-navy-900">
+            <p className="font-bold">Request received: {lastRequest.id}</p>
+            <p>Staff will contact {lastRequest.guestName} at {lastRequest.phone} to confirm availability.</p>
+          </div>
+        ) : null}
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <Input label="Guest name" value={form.guestName} onChange={(guestName) => update({ guestName })} />
+          <Input label="Room number" value={form.roomNumber} onChange={(roomNumber) => update({ roomNumber })} />
+          <Input label="Phone" value={form.phone} onChange={(phone) => update({ phone })} />
+          <Input
+            label="Preferred date"
+            type="date"
+            value={form.preferredDate}
+            onChange={(preferredDate) => update({ preferredDate })}
+          />
+          <Input
+            label="Preferred time"
+            type="time"
+            value={form.preferredTime}
+            onChange={(preferredTime) => update({ preferredTime })}
+          />
+          <Input
+            label="Party size"
+            type="number"
+            min="1"
+            max="12"
+            value={String(form.partySize)}
+            onChange={(partySize) => update({ partySize: Math.min(12, Math.max(1, Number(partySize) || 1)) })}
+          />
+        </div>
+
+        <label className="mt-3 block text-sm font-semibold">
+          Occasion or notes
+          <textarea
+            className="mt-2 min-h-28 w-full rounded-lg border border-navy-950/10 bg-white px-3 py-3 text-base outline-none ring-sunset-500/30 transition focus:ring-4"
+            value={form.notes}
+            onChange={(event) => update({ notes: event.target.value })}
+          />
+        </label>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <Button disabled={!canSubmit} onClick={onSubmit}>
+            Submit Request
+          </Button>
+          <Button variant="secondary" onClick={() => onNavigate("home")}>
+            Back Home
+          </Button>
+        </div>
+      </section>
+
+      <aside className="h-fit rounded-lg border border-navy-950/10 bg-white p-4 shadow-sm">
+        <h2 className="font-bold">Hands-On Dining Ritual</h2>
+        <p className="mt-2 text-sm leading-6 text-navy-900/70">
+          The tasting is intentionally designed to be enjoyed by hand. Warm towels and hand-cleansing service are part
+          of the experience.
+        </p>
+        <div className="mt-4 rounded-lg bg-foam p-3 text-sm leading-6">
+          <p className="font-semibold">Capacity</p>
+          <p>Up to 12 guests by request.</p>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 function AdminLoginPage({
   password,
   error,
@@ -830,23 +1118,54 @@ function AdminLoginPage({
 
 function AdminDashboardPage({
   orders,
+  menuItems,
   openOrders,
   completedSales,
   settings,
+  revenueCenters,
+  reservationRequests,
   onStatusChange,
+  onReservationStatusChange,
   onNavigate,
   onExport,
 }: {
   orders: Order[];
+  menuItems: MenuItem[];
   openOrders: number;
   completedSales: number;
   settings: BarSettings;
+  revenueCenters: RevenueCenter[];
+  reservationRequests: ReservationRequest[];
   onStatusChange: (id: string, status: OrderStatus) => void;
+  onReservationStatusChange: (id: string, status: ReservationStatus) => void;
   onNavigate: (page: Page) => void;
   onExport: () => void;
 }) {
+  const itemById = new Map(menuItems.map((item) => [item.id, item]));
+  const activeOrders = orders.filter((order) => order.status !== "Cancelled");
+  const revenueCenterTotals = revenueCenters.map((center) => {
+    const total = activeOrders.reduce((sum, order) => {
+      const centerSubtotal = order.items.reduce((lineSum, line) => {
+        const item = itemById.get(line.itemId);
+        return item?.revenueCenterId === center.id ? lineSum + line.unitPrice * line.quantity : lineSum;
+      }, 0);
+      return sum + centerSubtotal;
+    }, 0);
+
+    return { center, total };
+  });
+
   return (
     <div className="grid gap-4">
+      <section className="rounded-lg border border-navy-950/10 bg-white p-4 shadow-sm">
+        <p className="text-sm font-bold uppercase tracking-wide text-sunset-500">Admin</p>
+        <h1 className="mt-1 text-2xl font-bold">FABS Hospitality OS</h1>
+        <p className="mt-2 text-sm leading-6 text-navy-900/65">
+          Revenue centers are configuration-driven so future properties can activate different venues without changing
+          application logic.
+        </p>
+      </section>
+
       <section className="grid gap-3 sm:grid-cols-3">
         <Metric icon={<PanelRightOpen size={20} />} label="Open Orders" value={String(openOrders)} />
         <Metric icon={<BadgeDollarSign size={20} />} label="Daily Sales" value={formatMoney(completedSales)} />
@@ -855,6 +1174,66 @@ function AdminDashboardPage({
           label="Ordering"
           value={settings.orderingPaused ? "Paused" : "Active"}
         />
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {revenueCenterTotals.map(({ center, total }) => (
+          <div className="rounded-lg border border-navy-950/10 bg-white p-4 shadow-sm" key={center.id}>
+            <p className="text-xs font-bold uppercase tracking-wide text-navy-900/50">Revenue Center</p>
+            <h2 className="mt-2 font-bold">{center.name}</h2>
+            <p className="mt-1 text-2xl font-bold text-sunset-600">{formatMoney(total)}</p>
+            <p className="mt-2 text-xs leading-5 text-navy-900/60">{center.description}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Amicasa Reservations</h1>
+          <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-navy-900 shadow-sm">
+            {reservationRequests.length} requests
+          </span>
+        </div>
+        {reservationRequests.length ? (
+          reservationRequests.map((request) => (
+            <div className="rounded-lg border border-navy-950/10 bg-white p-4 shadow-sm" key={request.id}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wide text-sunset-500">{request.id}</p>
+                  <h2 className="mt-1 font-bold">{request.guestName}</h2>
+                  <p className="text-sm text-navy-900/65">
+                    Room {request.roomNumber || "-"} · {request.phone}
+                  </p>
+                </div>
+                <select
+                  className="h-11 rounded-lg border border-navy-950/10 bg-white px-3 text-sm font-semibold"
+                  value={request.status}
+                  onChange={(event) => onReservationStatusChange(request.id, event.target.value as ReservationStatus)}
+                >
+                  {(["New", "Contacted", "Confirmed", "Declined", "Completed"] as ReservationStatus[]).map((status) => (
+                    <option key={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-3 grid gap-2 text-sm text-navy-900/70 sm:grid-cols-3">
+                <p>
+                  <span className="font-semibold text-navy-900">Date:</span> {request.preferredDate}
+                </p>
+                <p>
+                  <span className="font-semibold text-navy-900">Time:</span> {formatTime(request.preferredTime)}
+                </p>
+                <p>
+                  <span className="font-semibold text-navy-900">Party:</span> {request.partySize}
+                </p>
+              </div>
+              {request.notes ? <p className="mt-3 text-sm leading-6 text-navy-900/70">{request.notes}</p> : null}
+            </div>
+          ))
+        ) : (
+          <div className="rounded-lg border border-navy-950/10 bg-white p-4 text-sm text-navy-900/65 shadow-sm">
+            No Amicasa reservation requests yet.
+          </div>
+        )}
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">

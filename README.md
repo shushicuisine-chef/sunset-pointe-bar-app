@@ -2,6 +2,8 @@
 
 Mobile-first React, TypeScript, and Tailwind CSS PWA for Banana Bay Resort & Marina guests ordering from Sunset Pointe Bar at `sunsetpointebar.com`.
 
+This project is now structured as Deployment 1 of the configurable FABS Hospitality OS architecture. See `docs/fabs-hospitality-os-architecture.md`.
+
 ## What Is Included
 
 - Guest flow: home, menu, cart, checkout, confirmation, and order status.
@@ -33,6 +35,7 @@ sunset90
 
 - `src/services/storage.ts` is the mock order, menu, settings, and CSV export boundary.
 - `src/services/payment.ts` contains the placeholder payment intent shape for Stripe or Square.
+- `src/data/hospitality.ts` contains the current property, venue, experience, revenue center, operating window, fulfillment method, reservation, and live announcement configuration.
 - `src/types.ts` contains the app data model.
 
 ## Netlify Deployment

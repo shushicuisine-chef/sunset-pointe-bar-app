@@ -1,4 +1,5 @@
 import type { BarSettings, MenuCategory, MenuItem, Order } from "../types";
+import { activePropertyId } from "./hospitality";
 
 export const menuCategories: MenuCategory[] = [
   "Breakfast",
@@ -45,7 +46,79 @@ const menuImages = {
 
 const targetCost = (price: number) => Math.round(price * 20) / 100;
 
-export const initialMenuItems: MenuItem[] = [
+const menuContextByCategory: Record<
+  MenuCategory,
+  Pick<MenuItem, "propertyId" | "venueId" | "experienceId" | "revenueCenterId" | "fulfillmentMethodIds">
+> = {
+  Breakfast: {
+    propertyId: activePropertyId,
+    venueId: "breakfast-service",
+    experienceId: "breakfast-buffet",
+    revenueCenterId: "breakfast",
+    fulfillmentMethodIds: ["marketplace-pickup"],
+  },
+  "Coffee & Juice": {
+    propertyId: activePropertyId,
+    venueId: "pool-mini-mercado",
+    experienceId: "pool-mini-mercado",
+    revenueCenterId: "pool-marketplace",
+    fulfillmentMethodIds: ["marketplace-pickup"],
+  },
+  Slushies: {
+    propertyId: activePropertyId,
+    venueId: "pool-mini-mercado",
+    experienceId: "pool-mini-mercado",
+    revenueCenterId: "pool-marketplace",
+    fulfillmentMethodIds: ["marketplace-pickup", "pool-pickup"],
+  },
+  "Beer & Wine": {
+    propertyId: activePropertyId,
+    venueId: "sunset-pointe-bar",
+    experienceId: "sunset-pointe-bar",
+    revenueCenterId: "sunset-bar",
+    fulfillmentMethodIds: ["sunset-pointe-pickup"],
+  },
+  "Sunset Refreshers": {
+    propertyId: activePropertyId,
+    venueId: "sunset-pointe-bar",
+    experienceId: "sunset-pointe-bar",
+    revenueCenterId: "sunset-bar",
+    fulfillmentMethodIds: ["sunset-pointe-pickup"],
+  },
+  "Surf & Turf Bites": {
+    propertyId: activePropertyId,
+    venueId: "sunset-pointe-dining",
+    experienceId: "sunset-pointe-dining",
+    revenueCenterId: "sunset-dining",
+    fulfillmentMethodIds: ["sunset-pointe-pickup", "pool-pickup"],
+  },
+  "Smoked Meats": {
+    propertyId: activePropertyId,
+    venueId: "sunset-pointe-dining",
+    experienceId: "sunset-pointe-dining",
+    revenueCenterId: "sunset-dining",
+    fulfillmentMethodIds: ["sunset-pointe-pickup", "pool-pickup"],
+  },
+  "Poolside Favorites": {
+    propertyId: activePropertyId,
+    venueId: "poolside-dining",
+    experienceId: "poolside-dining",
+    revenueCenterId: "pool-dining",
+    fulfillmentMethodIds: ["pool-pickup", "chair-delivery"],
+  },
+};
+
+const applyMenuContext = (item: MenuItem): MenuItem => ({
+  ...menuContextByCategory[item.category],
+  ...item,
+  propertyId: item.propertyId ?? menuContextByCategory[item.category].propertyId,
+  venueId: item.venueId ?? menuContextByCategory[item.category].venueId,
+  experienceId: item.experienceId ?? menuContextByCategory[item.category].experienceId,
+  revenueCenterId: item.revenueCenterId ?? menuContextByCategory[item.category].revenueCenterId,
+  fulfillmentMethodIds: item.fulfillmentMethodIds ?? menuContextByCategory[item.category].fulfillmentMethodIds,
+});
+
+export const initialMenuItems: MenuItem[] = ([
   {
     id: "breakfast-sandwich",
     name: "Marina Egg Sandwich",
@@ -393,7 +466,7 @@ export const initialMenuItems: MenuItem[] = [
     imageUrl: menuImages.marinaChoppedSalad,
     available: true,
   },
-];
+] satisfies MenuItem[]).map(applyMenuContext);
 
 export const initialSettings: BarSettings = {
   orderingPaused: false,

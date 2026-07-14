@@ -9,9 +9,21 @@ interface AppShellProps {
   cartCount: number;
   onNavigate: (page: Page) => void;
   onBack?: () => void;
+  title?: string;
+  subtitle?: string;
+  domain?: string;
 }
 
-export function AppShell({ children, page, cartCount, onNavigate, onBack }: AppShellProps) {
+export function AppShell({
+  children,
+  page,
+  cartCount,
+  onNavigate,
+  onBack,
+  title = "Sunset Pointe Bar",
+  subtitle = "Banana Bay Resort & Marina",
+  domain = "sunsetpointebar.com",
+}: AppShellProps) {
   const showBack = page !== "home";
 
   return (
@@ -35,8 +47,8 @@ export function AppShell({ children, page, cartCount, onNavigate, onBack }: AppS
           )}
 
           <button className="min-w-0 flex-1 text-left" onClick={() => onNavigate("home")}>
-            <p className="truncate text-base font-semibold leading-tight">Sunset Pointe Bar</p>
-            <p className="truncate text-xs text-white/70">Banana Bay Resort & Marina</p>
+            <p className="truncate text-base font-semibold leading-tight">{title}</p>
+            <p className="truncate text-xs text-white/70">{subtitle}</p>
           </button>
 
           <button
@@ -67,7 +79,7 @@ export function AppShell({ children, page, cartCount, onNavigate, onBack }: AppS
           <button className="font-semibold" onClick={() => onNavigate("admin")}>
             Admin
           </button>
-          <span>sunsetpointebar.com</span>
+          <span>{domain}</span>
         </div>
       </footer>
     </div>

@@ -13,3 +13,4 @@ github-ready-*.zip
 github-upload-*/
 backup-stopped-app-src-*/
 tmp-menu-image-candidates/
+tmp/

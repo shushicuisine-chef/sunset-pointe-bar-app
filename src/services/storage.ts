@@ -1,9 +1,21 @@
 import { initialMenuItems, initialSettings, sampleOrders } from "../data/menu";
-import type { BarSettings, CartItem, CheckoutForm, MenuItem, Order, OrderStatus } from "../types";
+import { activePropertyId } from "../data/hospitality";
+import type {
+  BarSettings,
+  CartItem,
+  CheckoutForm,
+  MenuItem,
+  Order,
+  OrderStatus,
+  ReservationForm,
+  ReservationRequest,
+  ReservationStatus,
+} from "../types";
 
 const TAX_RATE = 0.07;
 const MENU_KEY = "sunset-pointe-menu-v3";
 const ORDERS_KEY = "sunset-pointe-orders";
+const RESERVATIONS_KEY = "sunset-pointe-reservations";
 const SETTINGS_KEY = "sunset-pointe-settings";
 
 const read = <T,>(key: string, fallback: T): T => {
@@ -129,6 +141,10 @@ export const getOrders = () => read<Order[]>(ORDERS_KEY, sampleOrders);
 
 export const saveOrders = (orders: Order[]) => write(ORDERS_KEY, orders);
 
+export const getReservationRequests = () => read<ReservationRequest[]>(RESERVATIONS_KEY, []);
+
+export const saveReservationRequests = (requests: ReservationRequest[]) => write(RESERVATIONS_KEY, requests);
+
 export const getSettings = () => read<BarSettings>(SETTINGS_KEY, initialSettings);
 
 export const saveSettings = (settings: BarSettings) => write(SETTINGS_KEY, settings);
@@ -165,6 +181,8 @@ export const createOrder = (cart: CartItem[], menuItems: MenuItem[], form: Check
   const deliveryFee =
     form.orderType === "Room Delivery" && settings.roomServiceEnabled ? roundMoney(settings.deliveryFee) : 0;
   const orders = getOrders();
+  const firstCartItem = cart[0];
+  const firstMenuItem = firstCartItem ? menuItems.find((item) => item.id === firstCartItem.itemId) : undefined;
   const nextNumber =
     Math.max(
       1043,
@@ -176,6 +194,10 @@ export const createOrder = (cart: CartItem[], menuItems: MenuItem[], form: Check
 
   const order: Order = {
     id: `SPB-${nextNumber}`,
+    propertyId: activePropertyId,
+    venueId: firstMenuItem?.venueId,
+    revenueCenterId: firstMenuItem?.revenueCenterId,
+    fulfillmentMethodId: firstMenuItem?.fulfillmentMethodIds?.[0],
     guestName: form.guestName.trim(),
     roomNumber: form.roomNumber.trim(),
     phone: form.phone.trim(),
@@ -200,6 +222,44 @@ export const updateOrderStatus = (orderId: string, status: OrderStatus) => {
   const orders = getOrders().map((order) => (order.id === orderId ? { ...order, status } : order));
   saveOrders(orders);
   return orders;
+};
+
+export const createReservationRequest = (form: ReservationForm) => {
+  const requests = getReservationRequests();
+  const nextNumber =
+    Math.max(
+      1000,
+      ...requests.map((request) => {
+        const numeric = Number(request.id.replace("AM-", ""));
+        return Number.isFinite(numeric) ? numeric : 1000;
+      }),
+    ) + 1;
+
+  const request: ReservationRequest = {
+    ...form,
+    id: `AM-${nextNumber}`,
+    propertyId: activePropertyId,
+    venueId: "amicasa",
+    experienceId: "amicasa",
+    revenueCenterId: "amicasa",
+    guestName: form.guestName.trim(),
+    roomNumber: form.roomNumber.trim(),
+    phone: form.phone.trim(),
+    notes: form.notes.trim(),
+    status: "New",
+    timestamp: new Date().toISOString(),
+  };
+
+  saveReservationRequests([request, ...requests]);
+  return request;
+};
+
+export const updateReservationStatus = (requestId: string, status: ReservationStatus) => {
+  const requests = getReservationRequests().map((request) =>
+    request.id === requestId ? { ...request, status } : request,
+  );
+  saveReservationRequests(requests);
+  return requests;
 };
 
 export const exportOrdersCsv = (orders: Order[]) => {
